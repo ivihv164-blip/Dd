@@ -1,0 +1,124 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "SpeedMenu"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- ປຸ່ມເປີດ/ປິດວົງມົນ
+local toggle = Instance.new("TextButton")
+toggle.Size = UDim2.fromOffset(55,55)
+toggle.Position = UDim2.new(0,20,0.5,-30)
+toggle.Text = "⚡"
+toggle.TextSize = 25
+toggle.TextColor3 = Color3.new(1,1,1)
+toggle.BackgroundColor3 = Color3.new(0,0,0)
+toggle.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1,0)
+corner.Parent = toggle
+
+-- ເມນູ
+local menu = Instance.new("Frame")
+menu.Size = UDim2.fromOffset(230,140)
+menu.Position = UDim2.new(0.5,-115,0.5,-70)
+menu.BackgroundColor3 = Color3.new(0,0,0)
+menu.Parent = gui
+
+local menuCorner = Instance.new("UICorner")
+menuCorner.CornerRadius = UDim.new(0,12)
+menuCorner.Parent = menu
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,0,0,40)
+title.Text = "Speed 1 - 10000"
+title.TextColor3 = Color3.new(1,1,1)
+title.TextSize = 18
+title.BackgroundTransparency = 1
+title.Parent = menu
+
+local input = Instance.new("TextBox")
+input.Size = UDim2.new(1,-30,0,45)
+input.Position = UDim2.new(0,15,0,55)
+input.PlaceholderText = "ໃສ່ Speed..."
+input.Text = "16"
+input.TextColor3 = Color3.new(1,1,1)
+input.TextSize = 18
+input.BackgroundColor3 = Color3.fromRGB(30,30,30)
+input.Parent = menu
+
+local inputCorner = Instance.new("UICorner")
+inputCorner.CornerRadius = UDim.new(0,8)
+inputCorner.Parent = input
+
+local apply = Instance.new("TextButton")
+apply.Size = UDim2.new(1,-30,0,30)
+apply.Position = UDim2.new(0,15,0,105)
+apply.Text = "APPLY"
+apply.TextColor3 = Color3.new(1,1,1)
+apply.BackgroundColor3 = Color3.fromRGB(30,30,30)
+apply.Parent = menu
+
+local applyCorner = Instance.new("UICorner")
+applyCorner.CornerRadius = UDim.new(0,8)
+applyCorner.Parent = apply
+
+-- ເປີດ/ປິດ
+toggle.MouseButton1Click:Connect(function()
+    menu.Visible = not menu.Visible
+end)
+
+-- ປັບ Speed
+apply.MouseButton1Click:Connect(function()
+    local speed = tonumber(input.Text)
+
+    if speed then
+        speed = math.clamp(speed,1,10000)
+
+        local character = player.Character
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+        if humanoid then
+            humanoid.WalkSpeed = speed
+            input.Text = tostring(speed)
+        end
+    end
+end)
+
+-- ລາກປຸ່ມວົງມົນ
+local dragging = false
+local dragStart
+local startPos
+
+toggle.InputBegan:Connect(function(inputObject)
+    if inputObject.UserInputType == Enum.UserInputType.MouseButton1
+    or inputObject.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = true
+        dragStart = inputObject.Position
+        startPos = toggle.Position
+
+        inputObject.Changed:Connect(function()
+            if inputObject.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(inputObject)
+    if dragging and (inputObject.UserInputType == Enum.UserInputType.MouseMovement
+    or inputObject.UserInputType == Enum.UserInputType.Touch) then
+
+        local delta = inputObject.Position - dragStart
+
+        toggle.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
